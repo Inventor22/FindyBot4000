@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Ignore PublishProfile for WebDeploy in Visual Studio. For rapid prototyping; removes latency and commit noise from continuous integration with git.
+*.[Pp]ublish.xml
+*.azurePubxml
+*.pubxml
+*.publishproj
+profile.arm.json
+
 # User-specific files
 *.rsuser
 *.suo
