@@ -14,8 +14,29 @@ namespace FindyBot4000
 {
     public class FindyBot : ActivityHandler
     {
+        private BotState conversationState;
+        private BotState userState;
+
+        public FindyBot(ConversationState conversationState, UserState userState)
+        {
+            this.conversationState = conversationState;
+            this.userState = userState;
+        }
+
+        public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await base.OnTurnAsync(turnContext, cancellationToken);
+
+            // Save any state changes that might have occurred during the turn.
+            await this.conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+            await this.userState.SaveChangesAsync(turnContext, false, cancellationToken);
+        }
+
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
+            var conversationStateAccessors = this.conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
+            ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData());
+
             switch (turnContext.Activity.Text.ToLower())
             {
                 default:
@@ -45,7 +66,9 @@ namespace FindyBot4000
                             case "RemoveObject":
 
                                 string item = new ActionsSdkRequestMapper().StripInvocation(request.Intent.Query, "remove");
-    
+
+                                conversationData.PreviousScene = "RemoveObject";
+
                                 await turnContext.SendActivityAsync(
                                     MessageFactory.Text(
                                         $"Removing {item}.",
@@ -54,9 +77,16 @@ namespace FindyBot4000
                                 break;
 
                             case "actions.intent.YES":
+
+                                string response = conversationData.PreviousScene == "RemoveObject"
+                                    ? "Ok, I've removed the object"
+                                    : "YES";
+
+                                conversationData.PreviousScene = "YES";
+
                                 await turnContext.SendActivityAsync(
                                     MessageFactory.Text(
-                                        $"YES",
+                                        response,
                                         inputHint: InputHints.IgnoringInput),
                                     cancellationToken);
                                 break;
