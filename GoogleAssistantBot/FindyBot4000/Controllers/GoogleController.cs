@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Bot.Builder.Community.Adapters.ActionsSDK;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 
